@@ -101,6 +101,18 @@ class App extends Component {
           this.deleteSubscriber(event.stream.streamManager);
         });
 
+        mySession.on("publisherStartSpeaking", event => {
+          console.log(
+            "Publisher " + event.connection.connectionId + " start speaking"
+          );
+        });
+
+        mySession.on("publisherStopSpeaking", event => {
+          console.log(
+            "Publisher " + event.connection.connectionId + " stop speaking"
+          );
+        });
+
         // --- 4) Connect to the session with a valid user token ---
 
         // 'getToken' method is simulating what your server-side should do.
