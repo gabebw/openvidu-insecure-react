@@ -1,8 +1,9 @@
 import axios from "axios";
 import { OpenVidu } from "openvidu-browser";
 import React, { Component } from "react";
+import Session from "./Session";
+import Join from "./Join";
 import "./App.css";
-import UserVideoComponent from "./UserVideoComponent";
 
 const OPENVIDU_SERVER_URL = "https://" + window.location.hostname + ":4443";
 const OPENVIDU_SERVER_SECRET = "MY_SECRET";
@@ -19,13 +20,6 @@ class App extends Component {
       publisher: undefined,
       subscribers: []
     };
-
-    this.joinSession = this.joinSession.bind(this);
-    this.leaveSession = this.leaveSession.bind(this);
-    this.handleChangeSessionId = this.handleChangeSessionId.bind(this);
-    this.handleChangeUserName = this.handleChangeUserName.bind(this);
-    this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
-    this.onbeforeunload = this.onbeforeunload.bind(this);
   }
 
   componentDidMount() {
@@ -36,29 +30,29 @@ class App extends Component {
     window.removeEventListener("beforeunload", this.onbeforeunload);
   }
 
-  onbeforeunload(event) {
+  onbeforeunload = event => {
     this.leaveSession();
-  }
+  };
 
-  handleChangeSessionId(e) {
+  handleChangeSessionId = e => {
     this.setState({
       mySessionId: e.target.value
     });
-  }
+  };
 
-  handleChangeUserName(e) {
+  handleChangeUserName = e => {
     this.setState({
       myUserName: e.target.value
     });
-  }
+  };
 
-  handleMainVideoStream(stream) {
+  handleMainVideoStream = stream => {
     if (this.state.mainStreamManager !== stream) {
       this.setState({
         mainStreamManager: stream
       });
     }
-  }
+  };
 
   deleteSubscriber(streamManager) {
     let subscribers = this.state.subscribers;
@@ -71,7 +65,7 @@ class App extends Component {
     }
   }
 
-  joinSession() {
+  joinSession = () => {
     // --- 1) Get an OpenVidu object ---
 
     this.OV = new OpenVidu();
@@ -152,9 +146,9 @@ class App extends Component {
         });
       }
     );
-  }
+  };
 
-  leaveSession() {
+  leaveSession = () => {
     // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
 
     const mySession = this.state.session;
@@ -173,7 +167,7 @@ class App extends Component {
       mainStreamManager: undefined,
       publisher: undefined
     });
-  }
+  };
 
   render() {
     const mySessionId = this.state.mySessionId;
@@ -182,93 +176,25 @@ class App extends Component {
     return (
       <div className="container">
         {this.state.session === undefined ? (
-          <div id="join">
-            <div id="img-div">
-              <img
-                src="resources/images/openvidu_grey_bg_transp_cropped.png"
-                alt="OpenVidu logo"
-              />
-            </div>
-            <div id="join-dialog" className="jumbotron vertical-center">
-              <h1> Join a video session </h1>
-              <form className="form-group" onSubmit={this.joinSession}>
-                <p>
-                  <label>Participant: </label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    id="userName"
-                    value={myUserName}
-                    onChange={this.handleChangeUserName}
-                    required
-                  />
-                </p>
-                <p>
-                  <label> Session: </label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    id="sessionId"
-                    value={mySessionId}
-                    onChange={this.handleChangeSessionId}
-                    required
-                  />
-                </p>
-                <p className="text-center">
-                  <input
-                    className="btn btn-lg btn-success"
-                    name="commit"
-                    type="submit"
-                    value="JOIN"
-                  />
-                </p>
-              </form>
-            </div>
-          </div>
+          <Join
+            handleChangeSessionId={this.handleChangeSessionId}
+            handleChangeUserName={this.handleChangeUserName}
+            joinSession={this.joinSession}
+            mySessionId={mySessionId}
+            myUserName={myUserName}
+          />
         ) : null}
 
         {this.state.session !== undefined ? (
-          <div id="session">
-            <div id="session-header">
-              <h1 id="session-title">{mySessionId}</h1>
-              <input
-                className="btn btn-large btn-danger"
-                type="button"
-                id="buttonLeaveSession"
-                onClick={this.leaveSession}
-                value="Leave session"
-              />
-            </div>
-
-            {this.state.mainStreamManager !== undefined ? (
-              <div id="main-video" className="col-md-6">
-                <UserVideoComponent
-                  streamManager={this.state.mainStreamManager}
-                />
-              </div>
-            ) : null}
-            <div id="video-container" className="col-md-6">
-              {this.state.publisher !== undefined ? (
-                <div
-                  className="stream-container col-md-6 col-xs-6"
-                  onClick={() =>
-                    this.handleMainVideoStream(this.state.publisher)
-                  }
-                >
-                  <UserVideoComponent streamManager={this.state.publisher} />
-                </div>
-              ) : null}
-              {this.state.subscribers.map((sub, i) => (
-                <div
-                  key={i}
-                  className="stream-container col-md-6 col-xs-6"
-                  onClick={() => this.handleMainVideoStream(sub)}
-                >
-                  <UserVideoComponent streamManager={sub} />
-                </div>
-              ))}
-            </div>
-          </div>
+          <Session
+            handleChangeSessionId={this.handleChangeSessionId}
+            handleChangeUserName={this.handleChangeUserName}
+            leaveSession={this.leaveSession}
+            mainStreamManager={this.state.mainStreamManager}
+            mySessionId={mySessionId}
+            publisher={this.state.publisher}
+            subscribers={this.state.subscribers}
+          />
         ) : null}
       </div>
     );
@@ -304,7 +230,7 @@ class App extends Component {
           }
         })
         .then(response => {
-          console.log("CREATE SESION", response);
+          console.log("CREATE SESSION", response);
           resolve(response.data.id);
         })
         .catch(response => {
