@@ -7,10 +7,10 @@ export default class OpenViduVideoComponent extends Component {
 
     // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createMediaElementSource
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    this.gainNode = audioCtx.createGain();
-    this.gainNode.connect(audioCtx.destination);
+    this.gainNode = this.audioCtx.createGain();
+    this.gainNode.connect(this.audioCtx.destination);
     // mute
-    this.gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);
   }
 
   componentDidUpdate(props) {
